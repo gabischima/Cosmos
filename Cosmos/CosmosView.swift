@@ -123,13 +123,13 @@ Shows: ★★★★☆ (123)
     if self.didTouch {
       if settings.animated {
         for i in 0..<layers.count {
-          DispatchQueue.main.asyncAfter(deadline: .now() + (0.2 * Double(i))) {
+          DispatchQueue.main.asyncAfter(deadline: .now() + (0.05 * Double(i))) {
             let scale: CGFloat = 1.5
             
             let animation = CABasicAnimation(keyPath: "transform.scale")
             animation.fromValue = 1
             animation.toValue = scale
-            animation.duration = 0.5
+            animation.duration = 0.25
             animation.autoreverses = true
             layers[i].anchorPoint = CGPoint(x: 0, y: 0)
             layers[i].add(animation, forKey: "scale")
