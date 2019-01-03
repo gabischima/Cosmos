@@ -45,6 +45,9 @@ public struct CosmosSettings {
   /// Distance between stars.
   public var starMargin: Double = CosmosDefaultSettings.starMargin
   
+  /// Defines if interaction should be animated.
+  public var animated = CosmosDefaultSettings.animated
+  
   /**
   
   Array of points for drawing the star with size of 100 by 100 pixels. Supply your points if you need to draw a different shape.

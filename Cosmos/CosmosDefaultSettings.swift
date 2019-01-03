@@ -45,6 +45,9 @@ struct CosmosDefaultSettings {
   /// Distance between stars.
   static let starMargin: Double = 5
   
+  /// Defines if interaction should be animated.
+  static let animated: Bool = false
+  
   /**
   
   Array of points for drawing the star with size of 100 by 100 pixels. Supply your points if you need to draw a different shape.

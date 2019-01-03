@@ -63,8 +63,7 @@ struct StarLayer {
   - returns: New layer containing the star shape.
   
   */
-  static func create(_ starPoints: [CGPoint], size: Double,
-    lineWidth: Double, fillColor: UIColor, strokeColor: UIColor) -> CALayer {
+  static func create(_ starPoints: [CGPoint], size: Double, lineWidth: Double, fillColor: UIColor, strokeColor: UIColor) -> CALayer {
       
     let containerLayer = createContainerLayer(size)
     let path = createStarPath(starPoints, size: size, lineWidth: lineWidth)
@@ -73,7 +72,7 @@ struct StarLayer {
       fillColor: fillColor, strokeColor: strokeColor, size: size)
       
     containerLayer.addSublayer(shapeLayer)
-    
+
     return containerLayer
   }
 
@@ -392,6 +391,9 @@ struct CosmosDefaultSettings {
   
   /// Distance between stars.
   static let starMargin: Double = 5
+  
+  /// Defines if interaction should be animated.
+  static let animated: Bool = false
   
   /**
   
@@ -1039,6 +1041,9 @@ public struct CosmosSettings {
   /// Distance between stars.
   public var starMargin: Double = CosmosDefaultSettings.starMargin
   
+  /// Defines if interaction should be animated.
+  public var animated = CosmosDefaultSettings.animated
+  
   /**
   
   Array of points for drawing the star with size of 100 by 100 pixels. Supply your points if you need to draw a different shape.
@@ -1281,8 +1286,29 @@ Shows: ★★★★☆ (123)
       layers = addTextLayer(textLayer: textLayer, layers: layers)
     }
     
-    layer.sublayers = layers
+    if self.didTouch {
+      if settings.animated {
+        for i in 0..<layers.count {
+          DispatchQueue.main.asyncAfter(deadline: .now() + (0.2 * Double(i))) {
+            let scale: CGFloat = 1.5
+            
+            let animation = CABasicAnimation(keyPath: "transform.scale")
+            animation.fromValue = 1
+            animation.toValue = scale
+            animation.duration = 0.5
+            animation.autoreverses = true
+            layers[i].anchorPoint = CGPoint(x: 0, y: 0)
+            layers[i].add(animation, forKey: "scale")
+            
+            print(layers[i].bounds.width)
+          }
+        }
+      }
+    }
     
+    self.didTouch = false
+  
+    layer.sublayers = layers
     
     // Update size
     // ------------
@@ -1464,6 +1490,8 @@ Shows: ★★★★☆ (123)
   
   */
   func onDidTouch(_ locationX: CGFloat) {
+    self.didTouch = true
+
     let calculatedTouchRating = CosmosTouch.touchRating(locationX, settings: settings)
     
     if settings.updateOnTouch {
@@ -1481,6 +1509,8 @@ Shows: ★★★★☆ (123)
   
   private var previousRatingForDidTouchCallback: Double = -123.192
   
+  private var didTouch: Bool = false
+
   /// Increase the hitsize of the view if it's less than 44px for easier touching.
   override open func point(inside point: CGPoint, with event: UIEvent?) -> Bool {
     let oprimizedBounds = CosmosTouchTarget.optimize(bounds)
@@ -1571,6 +1601,12 @@ Shows: ★★★★☆ (123)
   @IBInspectable var updateOnTouch: Bool = CosmosDefaultSettings.updateOnTouch {
     didSet {
       settings.updateOnTouch = updateOnTouch
+    }
+  }
+  
+  @IBInspectable var animated: Bool = CosmosDefaultSettings.animated {
+    didSet {
+      settings.animated = animated
     }
   }
   

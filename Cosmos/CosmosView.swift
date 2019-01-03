@@ -120,8 +120,27 @@ Shows: ★★★★☆ (123)
       layers = addTextLayer(textLayer: textLayer, layers: layers)
     }
     
-    layer.sublayers = layers
+    if self.didTouch {
+      if settings.animated {
+        for i in 0..<layers.count {
+          DispatchQueue.main.asyncAfter(deadline: .now() + (0.2 * Double(i))) {
+            let scale: CGFloat = 1.5
+            
+            let animation = CABasicAnimation(keyPath: "transform.scale")
+            animation.fromValue = 1
+            animation.toValue = scale
+            animation.duration = 0.5
+            animation.autoreverses = true
+            layers[i].anchorPoint = CGPoint(x: 0, y: 0)
+            layers[i].add(animation, forKey: "scale")
+          }
+        }
+      }
+    }
     
+    self.didTouch = false
+  
+    layer.sublayers = layers
     
     // Update size
     // ------------
@@ -303,6 +322,8 @@ Shows: ★★★★☆ (123)
   
   */
   func onDidTouch(_ locationX: CGFloat) {
+    self.didTouch = true
+
     let calculatedTouchRating = CosmosTouch.touchRating(locationX, settings: settings)
     
     if settings.updateOnTouch {
@@ -320,6 +341,8 @@ Shows: ★★★★☆ (123)
   
   private var previousRatingForDidTouchCallback: Double = -123.192
   
+  private var didTouch: Bool = false
+
   /// Increase the hitsize of the view if it's less than 44px for easier touching.
   override open func point(inside point: CGPoint, with event: UIEvent?) -> Bool {
     let oprimizedBounds = CosmosTouchTarget.optimize(bounds)
@@ -410,6 +433,12 @@ Shows: ★★★★☆ (123)
   @IBInspectable var updateOnTouch: Bool = CosmosDefaultSettings.updateOnTouch {
     didSet {
       settings.updateOnTouch = updateOnTouch
+    }
+  }
+  
+  @IBInspectable var animated: Bool = CosmosDefaultSettings.animated {
+    didSet {
+      settings.animated = animated
     }
   }
   
