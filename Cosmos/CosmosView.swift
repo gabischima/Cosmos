@@ -106,12 +106,25 @@ Shows: ★★★★☆ (123)
     // Create star layers
     // ------------
     
-    var layers = CosmosLayers.createStarLayers(
-      rating,
-      settings: settings,
-      isRightToLeft: RightToLeft.isRightToLeft(self)
-    )
+    var layers: [CALayer] = []
     
+    /// Verify if update is after touch
+    if self.didTouch {
+      layers = CosmosLayers.animateStarLayers(
+        rating,
+        settings: settings,
+        isRightToLeft: RightToLeft.isRightToLeft(self)
+      )
+    } else {
+      layers = CosmosLayers.createStarLayers(
+        rating,
+        settings: settings,
+        isRightToLeft: RightToLeft.isRightToLeft(self)
+      )
+    }
+    
+    self.didTouch = false
+
     // Create text layer
     // ------------
 
@@ -119,26 +132,6 @@ Shows: ★★★★☆ (123)
       let textLayer = createTextLayer(text, layers: layers)
       layers = addTextLayer(textLayer: textLayer, layers: layers)
     }
-    
-    if self.didTouch {
-      if settings.animated {
-        for i in 0..<layers.count {
-          DispatchQueue.main.asyncAfter(deadline: .now() + (0.05 * Double(i))) {
-            let scale: CGFloat = 1.5
-            
-            let animation = CABasicAnimation(keyPath: "transform.scale")
-            animation.fromValue = 1
-            animation.toValue = scale
-            animation.duration = 0.25
-            animation.autoreverses = true
-            layers[i].anchorPoint = CGPoint(x: 0, y: 0)
-            layers[i].add(animation, forKey: "scale")
-          }
-        }
-      }
-    }
-    
-    self.didTouch = false
   
     layer.sublayers = layers
     

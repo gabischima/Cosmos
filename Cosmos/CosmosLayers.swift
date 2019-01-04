@@ -22,7 +22,7 @@ class CosmosLayers {
       totalNumberOfStars: settings.totalStars)
 
     var starLayers = [CALayer]()
-
+    
     for _ in (0..<settings.totalStars) {
       
       let fillLevel = CosmosRating.starFillLevel(ratingRemainder: ratingRemander,
@@ -37,7 +37,70 @@ class CosmosLayers {
     positionStarLayers(starLayers, starMargin: settings.starMargin)
     return starLayers
   }
+  
+  /**
+   
+   Creates the layers for the stars with animation.
+   
+   - parameter rating: The decimal number representing the rating. Usually a number between 1 and 5
+   - parameter settings: Star view settings.
+   - returns: Array of star layers.
+   
+   */
+  class func animateStarLayers(_ rating: Double, settings: CosmosSettings, isRightToLeft: Bool) -> [CALayer] {
+    
+    var ratingRemander = CosmosRating.numberOfFilledStars(rating, totalNumberOfStars: settings.totalStars)
 
+    var starLayers = [CALayer]()
+    
+    for i in (0..<settings.totalStars) {
+
+      let fillLevel = CosmosRating.starFillLevel(ratingRemainder: ratingRemander, fillMode: settings.fillMode)
+
+      let starLayer = createCompositeStarLayer(fillLevel, settings: settings, isRightToLeft: isRightToLeft)
+      
+      if settings.animated {
+        if fillLevel != 0 {
+          DispatchQueue.main.asyncAfter(deadline: .now() + (0.05 * Double(i))) {
+            let scale: CGFloat = 1.5
+
+            let animation = CABasicAnimation(keyPath: "transform.scale")
+            animation.fromValue = 1
+            animation.toValue = scale
+            animation.duration = 0.25
+            animation.autoreverses = true
+            
+            let animation2 = CABasicAnimation(keyPath: "position")
+            animation2.duration = 0.25
+
+            animation2.fromValue = NSValue(cgPoint: CGPoint(x: starLayer.position.x, y: starLayer.position.y))
+            animation2.toValue = NSValue(cgPoint: CGPoint(
+              x: starLayer.position.x - calculateScaledPosition(boundsSize: starLayer.bounds.size.width, scale: scale),
+              y: starLayer.position.y - calculateScaledPosition(boundsSize: starLayer.bounds.size.height, scale: scale))
+            )
+            
+            animation2.autoreverses = true
+
+            
+            starLayer.add(animation, forKey: "scale")
+            starLayer.add(animation2, forKey: "position")
+          }
+        }
+      }
+      
+      starLayers.append(starLayer)
+      ratingRemander -= 1
+    }
+
+    if isRightToLeft { starLayers.reverse() }
+    positionStarLayers(starLayers, starMargin: settings.starMargin)
+
+    return starLayers
+  }
+  
+  private class func calculateScaledPosition(boundsSize: CGFloat, scale: CGFloat) -> CGFloat {
+     return ((boundsSize * scale) - boundsSize) / 2
+  }
   
   /**
   
